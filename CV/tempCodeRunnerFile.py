@@ -1,0 +1,1 @@
+ cv2.CHAIN_APPROX_NON
