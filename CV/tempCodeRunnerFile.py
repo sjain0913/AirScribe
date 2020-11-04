@@ -1,1 +1,1 @@
- cv2.CHAIN_APPROX_NON
+#!/usr/bin/env python3

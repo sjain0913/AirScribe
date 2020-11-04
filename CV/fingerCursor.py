@@ -1,3 +1,7 @@
+#!python
+
+# w/ openCV3, version 3.3.0
+
 import numpy as np
 import cv2
 from collections import deque
@@ -7,16 +11,15 @@ def dist(a,b):
 
 def fingerCursor(device):
     cap = cv2.VideoCapture(device)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280)
+    
     cap_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     cap_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     # print(cap_height,cap_width)
 
     ## gesture matching initialization
-    pointer = cv2.imread('pointer.png')
-    pointer = cv2.cvtColor(pointer, cv2.COLOR_BGR2GRAY)
-    pointer = cv2.findContours(pointer, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    gesture2 = cv2.imread('gesture2.png')
+    gesture2 = cv2.cvtColor(gesture2, cv2.COLOR_BGR2GRAY)
+    gesture2 , _ = cv2.findContours(gesture2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     ## skin color segmentation mask
     skin_min = np.array([0, 40, 50],np.uint8)  # HSV mask
@@ -43,9 +46,6 @@ def fingerCursor(device):
     blue = (255,0,0)
     green = (0,255,0)
 
-    ## background segmentation
-    # fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
-
     # some kernels
     kernel_size = 5
     kernel1 = np.ones((kernel_size,kernel_size),np.float32)/kernel_size/kernel_size
@@ -59,7 +59,6 @@ def fingerCursor(device):
         frame_raw = cv2.flip(frame_raw,1)
         frame = frame_raw[:round(cap_height),:round(cap_width)]    # ROI of the image
         cv2.imshow('raw_frame',frame)
-        ## Color seperation and noise cancellation at HSV color space
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, skin_min, skin_max)
@@ -67,38 +66,20 @@ def fingerCursor(device):
         res = cv2.erode(res, kernel1, iterations=1)
         res = cv2.dilate(res, kernel1, iterations=1)
 
-        # res = cv2.filter2D(res,-1,kernel2)    # hacky
-        # cv2.imshow('hey2',res)
-
         ## Canny edge detection at Gray space.
         rgb = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
         cv2.imshow('rgb_2',rgb)
-        # cv2.imshow('rgb',rgb)
         gray = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
-        # cv2.imshow('gray',gray)
-        # gray = cv2.filter2D(gray,-1,kernel2)    # hacky
         gray = cv2.GaussianBlur(gray, (11, 11), 0)
         cv2.imshow('gray',gray)
-        # _, gray = cv2.threshold(gray,30, 255,cv2.THRESH_BINARY)
-        # gray = cv2.dilate(gray, kernel2, iterations=1)
-        # cv2.imshow('2d',gray)
-
-        ## Canny edge detection at Gray space.
-        # canny = cv2.Canny(gray, 300, 600)
-        # cv2.imshow('canny',canny)
-        # canny = cv2.erode(canny, kernel1, iterations=1)
-        # canny = cv2.dilate(canny, kernel1, iterations=1)
-
-        ## Background segmentation using motion detection (Optional)
-        # fgmask = fgbg.apply(canny)
 
         ## main function: find finger cursor position & draw trajectory
-        im2, contours, hierarchy = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)    # find all contours in the image
+        contours, hierarchy = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)    # find all contours in the image
         if len(contours) !=0:
             c = max(contours, key = cv2.contourArea)  # find biggest contour in the image
             if cv2.contourArea(c) > 1000:
                 topmost = tuple(c[c[:,:,1].argmin()][0])  # consider the topmost point of the biggest contour as cursor
-                gesture_index = cv2.matchShapes(c,pointer[0],2,0.0)
+                gesture_index = cv2.matchShapes(c,gesture2[0],2,0.0)
                 # obtain gesture matching index using gesture matching low_pass filter
                 gesture_matching_filter.append(gesture_index)
                 sum_gesture = 0
@@ -122,9 +103,6 @@ def fingerCursor(device):
                         if gesture_index > gesture_index_thres:
                             traj = np.append( traj, topmost)
                             dist_records.append(dist_pts)
-                            # traj = np.reshape( traj,(-1,1,2) )
-                            # print(traj.shape)
-                            # cv2.polylines(frame,[traj],0,orange,10)
                         else:
                             traj = np.array([], np.uint16)
                             traj = np.append( traj, topmost_last)
@@ -135,14 +113,7 @@ def fingerCursor(device):
                     except:
                         print('error')
                         pass
-                ## If move too fast, erase all trajectories
-                # elif dist_pts > 200:
-                #     traj = np.array(topmost_last, np.uint16)
 
-        # traj = np.reshape( traj,(-1,1,2) )
-        # print(traj.shape)
-        # cv2.polylines(frame,[traj],0,orange,10)
-        # print(traj)
         for i in range(1, len(dist_records)):
             # try:
             thickness = int(-0.072 * dist_records[i] + 13)
@@ -166,5 +137,5 @@ def fingerCursor(device):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    device = 1    # if device = 0, use the built-in computer camera
+    device = 0    # if device = 0, use the built-in computer camera
     fingerCursor(device)
