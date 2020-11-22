@@ -141,5 +141,5 @@ while True:
     elif key == ord('a') and not writing:
         writing = True
 
-camera.release()
+videoFeed.release()
 cv2.destroyAllWindows()
