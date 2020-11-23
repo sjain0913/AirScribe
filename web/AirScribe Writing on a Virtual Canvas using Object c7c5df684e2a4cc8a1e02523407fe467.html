@@ -1,0 +1,657 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>AirScribe: Writing on a Virtual Canvas using Object Tracking</title><style>
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", "SimSun", "Nanum Myeongjo", NanumMyeongjo, Batang, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC', 'Noto Sans CJK KR'; }
+
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC', 'Noto Sans Mono CJK KR'; }
+
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, YuMincho, "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Songti TC", "Songti SC", "SimSun", "Nanum Myeongjo", NanumMyeongjo, Batang, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC', 'Noto Sans CJK KR'; }
+
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC', 'Noto Sans Mono CJK KR'; }
+
+.highlight-default {
+}
+.highlight-gray {
+	color: rgb(155,154,151);
+}
+.highlight-brown {
+	color: rgb(100,71,58);
+}
+.highlight-orange {
+	color: rgb(217,115,13);
+}
+.highlight-yellow {
+	color: rgb(223,171,1);
+}
+.highlight-teal {
+	color: rgb(15,123,108);
+}
+.highlight-blue {
+	color: rgb(11,110,153);
+}
+.highlight-purple {
+	color: rgb(105,64,165);
+}
+.highlight-pink {
+	color: rgb(173,26,114);
+}
+.highlight-red {
+	color: rgb(224,62,62);
+}
+.highlight-gray_background {
+	background: rgb(235,236,237);
+}
+.highlight-brown_background {
+	background: rgb(233,229,227);
+}
+.highlight-orange_background {
+	background: rgb(250,235,221);
+}
+.highlight-yellow_background {
+	background: rgb(251,243,219);
+}
+.highlight-teal_background {
+	background: rgb(221,237,234);
+}
+.highlight-blue_background {
+	background: rgb(221,235,241);
+}
+.highlight-purple_background {
+	background: rgb(234,228,242);
+}
+.highlight-pink_background {
+	background: rgb(244,223,235);
+}
+.highlight-red_background {
+	background: rgb(251,228,228);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(55, 53, 47, 0.6);
+	fill: rgba(55, 53, 47, 0.6);
+}
+.block-color-brown {
+	color: rgb(100,71,58);
+	fill: rgb(100,71,58);
+}
+.block-color-orange {
+	color: rgb(217,115,13);
+	fill: rgb(217,115,13);
+}
+.block-color-yellow {
+	color: rgb(223,171,1);
+	fill: rgb(223,171,1);
+}
+.block-color-teal {
+	color: rgb(15,123,108);
+	fill: rgb(15,123,108);
+}
+.block-color-blue {
+	color: rgb(11,110,153);
+	fill: rgb(11,110,153);
+}
+.block-color-purple {
+	color: rgb(105,64,165);
+	fill: rgb(105,64,165);
+}
+.block-color-pink {
+	color: rgb(173,26,114);
+	fill: rgb(173,26,114);
+}
+.block-color-red {
+	color: rgb(224,62,62);
+	fill: rgb(224,62,62);
+}
+.block-color-gray_background {
+	background: rgb(235,236,237);
+}
+.block-color-brown_background {
+	background: rgb(233,229,227);
+}
+.block-color-orange_background {
+	background: rgb(250,235,221);
+}
+.block-color-yellow_background {
+	background: rgb(251,243,219);
+}
+.block-color-teal_background {
+	background: rgb(221,237,234);
+}
+.block-color-blue_background {
+	background: rgb(221,235,241);
+}
+.block-color-purple_background {
+	background: rgb(234,228,242);
+}
+.block-color-pink_background {
+	background: rgb(244,223,235);
+}
+.block-color-red_background {
+	background: rgb(251,228,228);
+}
+.select-value-color-default { background-color: rgba(206,205,202,0.5); }
+.select-value-color-gray { background-color: rgba(155,154,151, 0.4); }
+.select-value-color-brown { background-color: rgba(140,46,0,0.2); }
+.select-value-color-orange { background-color: rgba(245,93,0,0.2); }
+.select-value-color-yellow { background-color: rgba(233,168,0,0.2); }
+.select-value-color-green { background-color: rgba(0,135,107,0.2); }
+.select-value-color-blue { background-color: rgba(0,120,223,0.2); }
+.select-value-color-purple { background-color: rgba(103,36,222,0.2); }
+.select-value-color-pink { background-color: rgba(221,0,129,0.2); }
+.select-value-color-red { background-color: rgba(255,0,26,0.2); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="56a6ff49-174e-45d4-8f9c-bc277554a7d1" class="page sans"><header><img class="page-cover-image" src="https://images.unsplash.com/photo-1598520106830-8c45c2035460?ixlib=rb-1.2.1&amp;q=85&amp;fm=jpg&amp;crop=entropy&amp;cs=srgb&amp;ixid=eyJhcHBfaWQiOjYzOTIxfQ" style="object-position:center 50.09%"/><div class="page-header-icon page-header-icon-with-cover"><span class="icon">🖊️</span></div><h1 class="page-title">AirScribe: Writing on a Virtual Canvas using Object Tracking</h1></header><div class="page-body"><h2 id="7b838028-60ea-487a-8c36-37371516fb38" class="">Final Update - 11/22/2020</h2><p id="cac11bdc-93aa-48ef-8b5c-902e76e06005" class="">Our code - <a href="https://github.com/sjain0913/AirScribe/tree/master">Github</a></p><p id="eff79e86-ffa4-49df-93f9-5985d79ba607" class="">Kimaya Colaço - <a href="mailto:kimayacolaco@gatech.edu">kimayacolaco@gatech.edu</a></p><p id="a3c7de8a-6934-4d37-8e53-a000e96b680f" class="">Parth Nagpal - <a href="mailto:parthnagpal@gatech.edu">parthnagpal@gatech.edu</a></p><p id="078bd22e-7632-4e46-97a8-865627d97507" class="">Saumya Jain - <a href="mailto:samjain0913@gatech.edu">samjain0913@gatech.edu</a></p><p id="01f45fe1-e1cf-4923-a56c-a019d3d9cedb" class="">Gursimran Singh - <a href="mailto:gsingh@gatech.edu">gsingh@gatech.edu</a></p><hr id="289bcd59-a17c-4e9c-8805-ee6336727f01"/><h1 id="751ee6ca-6ad3-435a-a2aa-847644bf305e" class="">Abstract</h1><p id="772be768-8fcf-422a-a7b7-aecfabdc5149" class="">AirScribe provides users with an interface that captures gestures on a virtual canvas. </p><p id="df9b7248-1243-4bdf-88ac-d294844d7d52" class="">We see tremendous potential as this product could have several real-world applications. Currently, we see it as a useful tool for professors tackling remote learning. With having to teach virtual classes, it is difficult to share notes or write out concepts like one would on a typical whiteboard. With AirScribe, professors will be able to teach as if they had a whiteboard in front of them, and produce accessible notes for students. </p><p id="05369be8-f069-403e-8e3e-7c7eaa4ebf61" class="">We will be using object tracking and text recognition to convert the input (gestures) into the writing on a virtual canvas and finally into the output (writing captured as text). The gestures will be recognized, read in and correctly inverted by our system. The system will then display the captured output on a virtual canvas with a plain background. This will then be converted into printed text.</p><p id="3ac4fda0-5b92-403e-8138-d1a833c2ce8e" class="">
+</p><figure id="c7c5df68-4e2a-4cc8-a1e0-2523407fe467" class="image"><a href="virt.png"><img style="width:600px" src="virt.png"/></a></figure><p id="da96d878-340c-47ea-9edd-a99471628ccc" class="">
+</p><hr id="a233f2fc-f234-4dda-8ca4-732952cb0711"/><h1 id="bb98e2e0-4b02-49bc-b151-9d3eba122fa4" class="">Introduction</h1><p id="6b52d709-fbd6-4e2b-a1b5-9e0b8df23d84" class="">We designed AirScribe with virtual learning as a primary use case. This product could help professors have the feel of teaching on a whiteboard by writing in the air in front of them. They can explain concepts on this virtual whiteboard and be able to capture and convert their notes into text to distribute to students.</p><p id="0bce8eae-e4b7-4ea6-9366-e5b67040b6b4" class="">
+</p><p id="c41f766e-6772-43f2-8328-26130b86ac9a" class="">We planned to implement AirScribe using advanced computer vision and machine learning methods, using the steps detailed in the following overview:</p><ol id="f7943a4d-7709-442d-9786-835b6ae275a1" class="numbered-list" start="1"><li><strong>Preprocessing Video Feed:</strong> We extract skin color pixels of the user and that region is selected. This is then converted to a grayscale image and thresholding is applied.</li></ol><ol id="ada8fcc5-0c77-4ceb-9056-744a89073a0b" class="numbered-list" start="2"><li><strong>Gaussian Blurring:</strong> The video frames from the webcam will have noise, especially in lower quality image feeds. Using a Gaussian Blur will reduce sensor noise and effects of low lighting. We can blur the image by convolving it with a low-pass filter kernel. The kernel will be a Gaussian matrix. The output image is effectively blurred.</li></ol><ol id="bf73494b-f6df-4fd1-b532-7a9a419d8189" class="numbered-list" start="3"><li><strong>Convex Hull Detection:</strong> We draw a polygon around the hand to find the contours of the hand. The convex hull algorithm uses computations where a non-ambiguous and efficient representation of the required convex shape is constructed.</li></ol><ol id="887ecdd0-065a-4de0-9ea2-4fb00304266c" class="numbered-list" start="4"><li><strong>Fingertip Detection:</strong> From the obtained region, we calculate the contours of the hand. The contour points are saved and we detect the tip by finding the contour point with the maximum y-coordinate.</li></ol><ol id="f8fb3413-3af6-45b3-bf59-46a660d449a2" class="numbered-list" start="5"><li><strong>Tracking the Fingertip:</strong> Once our fingertip has been determine, we need to plot the coordinates. When the user draws a pattern with that finger, the positions and points of the finger get stored in a linked list. The list grows in size as new points are appended to it, while the finger moves. From this, we map the linked list on a smaller bitmap.</li></ol><ol id="647a2824-a699-4184-a711-d342ef5050ed" class="numbered-list" start="6"><li><strong>Recognition of Character: </strong>Using our created bitmap, we pass this into our model and recognize the character drawn. This uses a convolutional neural network.<ol id="11298b81-6bd7-4b18-8269-1caab380d93c" class="numbered-list" start="1"><li>This project uses a dataset where the training is done using a set of handwritten digits of the NIST database converted to a 28 x 28 pixel image format. This dataset can be used for classes of [0-9], [a-z] and [A-Z].</li></ol></li></ol><figure id="585741fd-ea76-4fe4-9088-2a1c9abf4c7e" class="image"><a href="Screen_Shot_2020-10-01_at_6.56.27_PM.png"><img style="width:1920px" src="./Screen_Shot_2020-10-01_at_6.56.27_PM.png"/></a><figcaption>Image from &quot;Visual Gesture Recognition for Text Writing in Air&quot;</figcaption></figure><h1 id="12fa411e-b2f7-4a90-9839-c74e831801bc" class="">Approach </h1><p id="b4aed9e0-9680-475b-a3eb-7e81d680c1ad" class="">We have divided the project in two major parts: Generating an image using object-tracking (computer vision) and using a Handwritten-Text Recognition model to understand the image. </p><h3 id="ff361246-4fac-434c-845e-bb03bdf75024" class="">Computer Vision (Object-Tracking)</h3><p id="8750a809-3626-4f7b-b8c0-7f4fb7240e18" class="">For this section, we are building a computer vision based system to track motion of the pen or object the user is utilizing to write. The system will be able to record the trajectory of the movement within the frame (camera-view) and capture it on a screen. </p><p id="3c0b45fd-b45e-4c3c-994b-12d87f9fb93c" class="">
+</p><p id="56017f59-1a3d-4342-b64c-6e0c7bba1b3b" class="">Data/ Libraries Used:</p><ol id="189af574-102f-4544-9855-7b86071f393b" class="numbered-list" start="1"><li>OpenCV</li></ol><ol id="3cdb8765-ee93-4c8a-ad29-0a44477ac45f" class="numbered-list" start="2"><li>NumPy</li></ol><p id="0db3e2c1-2bfc-4e59-88b1-5b9cedeb1b42" class="">
+</p><p id="8422c998-ae8b-435d-a6f9-b6f80cfa60b3" class="">We implemented this model based on the program flow described below:</p><p id="533c3b66-c7a9-420f-a4d1-fda9fa43048c" class="">
+</p><ol id="a325a9ca-71be-4245-ad12-b1d5bc70d9e9" class="numbered-list" start="1"><li><strong>Configuration/ Initialization: </strong>The program first initializes the frame (virtual canvas that captures writing) and window interface (with which the user interacts) using OpenCV functions. The initial pen position, pen color mask, color definitions for the different pen options, and data structures to store the trajectory are also initialized in this step. </li></ol><p id="615c5c6a-f370-49f0-9b5b-8bd1c5cefaca" class="">
+</p><ol id="046a9efe-e7ac-4dc0-a745-90fc66673cfe" class="numbered-list" start="1"><li>The system then continuously obtains frames from the camera and tracks object motion in three main stages:<p id="35dd5125-42fb-47ae-b5fb-f51a26c27aa6" class="">
+</p><ol id="57119656-2107-499c-b72c-16394e8d4421" class="numbered-list" start="1"><li><strong>Tip location</strong>: To locate the tip of the pen from the rest of the environment, we have to isolate it using color segmentation. <p id="71bfa96a-25cb-44a1-a5bf-ef5a2ff2fcff" class="">This implementation uses an HSV mask for the segmentation, in order to recognize and track the writing object. Out systems allows the user to write with any blue colored object. The HSV mask allows the system to recognize various shades of blue as the pen.</p><figure id="82d2e297-08c4-42d2-a8aa-240c8402bed5" class="image"><a href="./Screen_Shot_2020-11-23_at_12.19.05_AM.png"><img style="width:384px" src="./Screen_Shot_2020-11-23_at_12.19.05_AM.png"/></a></figure><p id="20403521-0a78-4b48-801e-6e9079f4e9dc" class="">We decided to go with object tracking over finger tracking since using a HSV mask for skin color recognizes other parts of the users body within the frame. Thus, this causes issues with being able to track only the finger being used to write. Using skin color recognition also adds the additional requirement of having to make sure the system is able to handle diverse skin tones. To avoid these constraints, we chose object tracking.</p><p id="1b2b4d2f-5168-48f5-9fd3-2b24615f423b" class="">After this, we find the biggest contour and choose the topmost point as our pen tip. Now we can go on to recognize the user&#x27;s writing.</p><p id="c3d5f753-edfd-459e-a761-6323aece7e43" class="">
+</p></li></ol><ol id="038b2f48-01ec-4aa6-a65e-7502e6c40cfa" class="numbered-list" start="2"><li><strong>Gesture recognition and additional commands</strong>: We have a predefined set of gestures and keys to execute certain functions. <p id="a2af6052-c45e-4784-8837-71b29b2fafc1" class="">In the case when the gesture of continued writing is displayed, we continuously need to record new trajectory points and moving velocities and capture these on the screen. </p><p id="39eaf84f-1e72-4a07-b1eb-11b40b888b6a" class="">The &#x27;a&#x27; key is used to pause gestures from being recognized and displayed on the screen. There are also buttons on the window interface for the user to clear the screen or change writing color. </p><p id="b29da441-121c-4f06-bc20-4b9f08e16d5c" class="">
+</p></li></ol><ol id="9b912b4f-135c-4a2c-8319-ce2278e0f14f" class="numbered-list" start="3"><li><strong>Trajectory generation</strong>: Based on the points in the trajectory point list, we can continue to draw our trajectory on the frame. Since there are different color options, there are data structures (deques) to store the trajectory for each color. The width of the trajectory drawn is currently uniform. A future goal would be to implement a way to select between an assortment of brushes of varying thickness, for more effective expression.</li></ol><p id="e7967443-6de2-4b92-8844-201deeba06cd" class="">
+</p></li></ol><ol id="eeb985a7-997c-42aa-894e-4ccfeeeaca27" class="numbered-list" start="2"><li>The continuous cycle of tip location, gesture recognition and trajectory recognition continues until the quit button is pressed by the user to exit the window or the clear button is clicked to reset the window.</li></ol><ol id="03327804-9186-4210-989a-be3b3d079d41" class="numbered-list" start="3"><li>When the &#x27;q&#x27; key is pressed, the user will quit the window. The system can release hold of the camera and exit out of the windows. Now, it is time for the machine learning to do its magic and recognize our drawn text, simultaneously captured on the user&#x27;s window and on a plain canvas (to be used in the recognition process).</li></ol><p id="0ab05574-00d2-4d37-a427-70f92482863f" class="">
+</p><h3 id="cf58f7a3-2658-4e67-86a3-0bef8a8dc1dd" class="">Handwritten-Text Recognition (Machine Learning)</h3><p id="263eb68a-0f4b-47c0-a34c-c89cd52849bb" class="">
+</p><p id="1e452f9d-c83f-4e7a-b667-443faa7ac643" class=""><strong>Approach 1 - training a Neural Network</strong></p><p id="7d8949cd-ae29-4d57-8176-fe23f19ea6d3" class="">We are building an HTR model that can transcribe the text in the image generated by our Finger-Tracking system. With a Neural Network trained on the EMNIST dataset, we will be able to achieve this goal. </p><p id="efa948ce-66d5-42e7-b00e-ce530feb09a0" class="">
+</p><p id="358ffb88-cf6a-4d13-b990-e98b704ccf61" class="">Data/Libraries Used:</p><ol id="ceb93355-9aab-496a-826b-db3e2884ef44" class="numbered-list" start="1"><li><a href="https://www.nist.gov/itl/products-and-services/emnist-dataset">EMNIST Dataset</a> - Handwritten Character Digits</li></ol><ol id="f1282009-b4c3-4c80-89e2-b8c4e0867968" class="numbered-list" start="2"><li>TensorFlow </li></ol><ol id="aa297b25-2e9f-45b3-a4fd-04f7ebd83ee6" class="numbered-list" start="3"><li>NumPy</li></ol><ol id="0e9f5633-bcd5-4bf6-9c95-982ed6a46892" class="numbered-list" start="4"><li>OpenCV</li></ol><p id="94f58aac-f6b7-4da1-ac64-adcd0a10cff3" class="">
+</p><p id="f3a41fdd-2e52-4870-bbee-06631c0f170b" class="">Taking inspiration from this <a href="https://towardsdatascience.com/build-a-handwritten-text-recognition-system-using-tensorflow-2326a3487cd5">Towards Data Science blog post</a>, we decided to build a NN which consists of CNN, RNN and CTC layer(s). The input images are pre-processed to increase the contrast. In our Final update, the image generated by the Finger-Tracking system will be optimized before being fed to the HTR system. After training our model using a 80/20 train/test split, we were able to achieve a word recognition accuracy of ~75%.</p><figure id="4992e40e-17bf-4323-8753-4f72e54806dc" class="image"><a href="./airscribe.png"><img style="width:1850px" src="./airscribe.png"/></a><figcaption>Our Handwritten Text Image</figcaption></figure><figure id="d7ab008d-299a-4e40-9503-73dcb1ae6fb7" class="image"><a href="Screen_Shot_2020-11-03_at_10.07.27_AM.png"><img style="width:900px" src="./Screen_Shot_2020-11-03_at_10.07.27_AM.png"/></a><figcaption>Our HTR system correctly recognising the word &#x27;airscribe&#x27; from the image.</figcaption></figure><p id="8adf98db-77b5-4f93-a6ce-b55d6744717a" class="">
+</p><p id="cc91de5c-a4d0-4faf-9a08-59c33203ed0a" class=""><strong>Approach 2 - using Google Cloud&#x27;s Vision API</strong></p><p id="925b0340-b094-450b-9ff0-b2e6088a89a1" class="">Google Cloud&#x27;s Vision API offers powerful pre-trained machine learning models throught REST and RPC APIs. It is OCR to extra text from images and is optimized for dense text. </p><p id="d209c19f-d188-4dd8-86f2-91f4b15c50e2" class="">We ran test for both our Neural Net and a program that uses Vision API and the latter performed better in the following areas:</p><ol id="79ac6a07-8969-43f6-814a-c3538641fc26" class="numbered-list" start="1"><li>Speed - It produces considerably faster results when gaining insights at edge. This is an important factor when it comes to building a stable app which can run on edge devices. </li></ol><ol id="3b14273d-4e4c-488a-a806-252f4c7d0be5" class="numbered-list" start="2"><li>Easier to deploy - We found that using the Vision API required a much smaller codebase that could be integrated easily into our current CV program</li></ol><ol id="5926aad8-ef78-4d25-be0b-4b56b812e1c0" class="numbered-list" start="3"><li>Multi-lingual Text Detection - Vision API is trained on a larger dataset than EMNIST which is limited to English text. This is an important factor for our product&#x27;s scale and regional inclusion. </li></ol><p id="ed0d4ddf-32c3-418a-a8c0-f91b679545bc" class="">
+</p><hr id="07f3121a-a9f7-487f-aa53-421b48de0e4d"/><h1 id="03f18b98-0150-4866-82a7-cd4bb99b4493" class="">Experiments and Results</h1><p id="cfdc936a-b1d6-4f03-970b-ba042538a645" class=""><strong>Experimental Setup</strong></p><p id="44fb8891-cfdb-45d7-bd5d-30f5f05b4b68" class="">We tested our program for accurate finger tracking and correct character recognition</p><ul id="1ecfad2d-bfcd-4df1-9915-ff07fdebb5b8" class="bulleted-list"><li><strong>Object Tracking</strong>: Our computer vision algorithm generated a 28x28 image of the character being drawn in air using the object. We manually tested this by drawing a character in front of the camera and then comparing it with the generated image. </li></ul><ul id="59ef746e-9335-4ed6-96e8-a4779414191e" class="bulleted-list"><li><strong>Convolutional Neural Network (CNN): </strong>Our CNN, during the training and testing phase, generated an accuracy metric for each character. We further tested this with our own data. </li></ul><p id="1200f242-aec8-4930-a9f6-5ed33e7c396f" class="">We used these experiments to test our system&#x27;s accuracy and improve upon it. </p><p id="92bad4b9-a3aa-46cc-9b70-a7d4d43db075" class="">
+</p><p id="5d7ed22e-f441-4f9c-b574-9f5ba54b64c4" class=""><strong>Datasets</strong></p><ul id="5573caa5-818c-475a-8287-549b5af5a381" class="bulleted-list"><li>We used the EMNIST dataset of 28x28 grayscale images of handwritten characters (letters and digits) available for use <a href="https://www.tensorflow.org/datasets/catalog/emnist">here</a>. We used this dataset to train our CNN. The split has 697,932 images for training and 116,323 images for testing. </li></ul><ul id="b663cf1f-97e7-4106-9fac-c83ad7b11954" class="bulleted-list"><li>We also generated our own dataset of handwritten/finger-tracked images for testing the neural network. </li></ul><figure id="0f485d56-0877-49a0-b256-13bd569fb25f" class="image"><a href="./emnist.png"><img style="width:850px" src="emnist.png"/></a><figcaption>EMNIST Dataset</figcaption></figure><p id="ed3f961b-ec82-4c54-9ebb-7347c5e5a7c1" class=""><strong>What we implemented ourselves?</strong></p><ul id="fe616ea7-5ec9-4e13-a7f9-f9cbd7ef5cc0" class="bulleted-list"><li>We read multiple papers on how to implement object-tracking but wrote our own code often taking help from the class material on video processing and online resources/blogs. We have cited what we read or used in the references section. </li></ul><ul id="ed802132-d132-4ebc-8ef8-7e52cfbae922" class="bulleted-list"><li>We found multiple blogs on how to implement a CNN for EMNIST database using <a href="https://www.kaggle.com/pagedavid/cnn-on-tensorflow">Tensorflow</a> or <a href="https://www.kaggle.com/ashwani07/emnist-using-keras-cnn">Keras</a>. To build upon this, we implemented our own continuous stroke recognition (cursive handwriting) over a letter-by-letter approach. </li></ul><ul id="c54a07df-0495-4afd-8c13-e9cc29247a5d" class="bulleted-list"><li>For making the program more useful, we introduced different colored pens and the ability to clear the screen.</li></ul><p id="407ae4cd-18ae-4b8b-9c7c-a438070842a0" class="">
+</p><p id="e24b07e5-5bf9-4b6b-a3f4-e3f9bb2cce96" class=""><strong>What is the definition of success with respect to our project?</strong></p><ul id="485c96a1-cc7a-4025-be88-97dcb5384335" class="bulleted-list"><li>We would consider our project successful if we are able to build a working pipeline for the processes we have mentioned above. </li></ul><ul id="e32ae85c-c084-4ada-b2c7-149b821550b5" class="bulleted-list"><li>In terms of the product, we aim to build a solution that can help instructors seamlessly write notes in the air and providing them with an advanced interface to interact with their students in situations of remote learning. </li></ul><ul id="e6308a3d-a415-4e24-a29e-cd41e7e6e970" class="bulleted-list"><li>Our north star metric would be a deployable platform!</li></ul><p id="11f3577f-38d1-415a-a0a5-45bba7f01777" class="">
+</p><h1 id="ca7e9708-734a-4549-ac29-ea3129e6bda9" class="">Qualitative Results</h1><h3 id="21637bfe-1a88-4587-8200-06443aae7cac" class="">Successful Cases</h3><p id="10542115-59cf-4c49-96b4-ce2ed184523c" class="">
+</p><p id="16526abf-4600-49ae-a4ac-fc2e620a8777" class=""><mark class="highlight-teal_background"><strong>Case 1</strong></mark></p><figure id="571731d1-f03f-4b37-92d7-ba43aac55414" class="image"><a href="./out2.jpeg"><img style="width:1600px" src="./out2.jpeg"/></a></figure><figure id="3bcf67cd-9944-4070-b710-a4b640168b0e" class="image"><a href="./Screen_Shot_2020-11-22_at_10.27.10_PM.png"><img style="width:1472px" src="Screen_Shot_2020-11-22_at_10.27.10_PM.png"/></a></figure><p id="b4a07e51-fb83-4f30-9600-443983642332" class="">
+</p><p id="2764e646-5729-4e9e-b2cd-fd6aab278de8" class="">Here the word &quot;<mark class="highlight-red"><strong>Hello</strong></mark>&quot; is drawn in front of the camera using an object and our computer vision system accurately tracks it down and projects it onto our white screen (in red color as selected by the user). The output is read by our HTR system which accurately recognizes it and prints out &quot;Hello&quot;.</p><p id="256af303-eb12-4aa9-9b50-481a87393f67" class="">
+</p><p id="da69f8c8-c890-4d83-aece-0e71d6eeda39" class=""><mark class="highlight-teal_background"><strong>Case 2</strong></mark></p><figure id="00fa550c-43f8-4378-8a70-8dc621067fda" class="image"><a href="./out4.jpeg"><img style="width:1600px" src="./out4.jpeg"/></a></figure><figure id="5a7567ee-2562-4439-b18a-a2f8b240de4d" class="image"><a href="Screen_Shot_2020-11-22_at_10.28.57_PM.png"><img style="width:1470px" src="Screen_Shot_2020-11-22_at_10.28.57_PM.png"/></a></figure><p id="e2c21716-d019-457d-a097-bd2a597f7f47" class="">
+</p><p id="dd888338-16be-4d87-978a-f8029cbb2b31" class="">Here the word &quot;<strong><mark class="highlight-teal">Word</mark></strong>&quot; is drawn in front of the camera using an object and our computer vision system accurately tracks it down and projects it onto our white screen (in green color as selected by the user). To test our system&#x27;s reliance, the user deliberately draws the word bigger in size with parts of it going outside our detection frame. The output is read by our HTR system which accurately recognizes it and prints out &quot;Word&quot;.</p><h3 id="fff4a790-5664-4c51-b064-3db27e66044f" class="">Failure Cases</h3><p id="a5f5848a-ce8c-4f10-a08d-8ed2e6b4fa27" class="">
+</p><p id="0a4200b9-530b-4745-905d-0de479905b41" class=""><mark class="highlight-red_background"><strong>Case 3</strong></mark></p><figure id="08b2813c-5b81-4ff1-9ca8-e3b615660b6b" class="image"><a href="./out6.jpeg"><img style="width:1600px" src="./out6.jpeg"/></a></figure><p id="9472cace-ff3d-455c-ab77-008e3f6afbe3" class="">
+</p><p id="77fb9c52-3763-4f86-a57e-ea1c1f6292b8" class="">Our system uses a HSV masks to track an object which is blue in color. In this scenario the background has a lot of extra elements which are blue in color and hence our system was not able correctly trace the path of one particular element and produced flawed results. </p><p id="d99b44c0-0110-4101-bc2c-2e3c59b3bf5c" class="">
+</p><p id="c7b75502-0299-4bc2-aa7f-e3cfd50cf1ed" class=""><mark class="highlight-red_background"><strong>Case 4</strong></mark></p><figure id="b776e316-1c27-486e-8d7d-0e8da81c50d8" class="image"><a href="out3.jpeg"><img style="width:1600px" src="out3.jpeg"/></a></figure><figure id="5c549ff9-ee16-45e6-aba7-bd38c827984a" class="image"><a href="./Screen_Shot_2020-11-22_at_10.36.25_PM.png"><img style="width:1440px" src="./Screen_Shot_2020-11-22_at_10.36.25_PM.png"/></a></figure><p id="afc28ce7-b271-45ec-b4de-dbc2b5629490" class="">
+</p><p id="ffed2041-8778-4cb4-a5bd-aa65f4cfe41e" class="">In this case, the user draws the word &quot;<mark class="highlight-teal"><strong>Nice</strong></mark>&quot; in front of the camera but our HTR system is not able to recognize it accurately and prints out &quot;Nice to&quot;. This may be due to a lot of noise in our drawn word (which can be caused by unstable drawing in air by the user).  </p><h2 id="b8201b70-53d1-4c3a-9315-b93e07bb793c" class="">Evaluation Metrics and Trends</h2><p id="4e6f6b60-4321-4321-a943-aed6d2e97d82" class="">Our system has two major components and we wanted to evaluate both of them seperately as well as when they work together. </p><ol id="22abafe0-fd83-4901-825a-b903a7d02a99" class="numbered-list" start="1"><li>Computer Vision - We wanted to evaluate the system&#x27;s accuracy by running a number of tests that qualitatively checked for a few metrics. These metric involved - if the system is able to load and run a tracking window with camera and a project window with white background. Our second and primary metric was if the system is able to initialize an object to track and then finally if the system follows the path as drawn by the user. </li></ol><ol id="556cea18-5a0c-4364-b707-4afdd0b261a5" class="numbered-list" start="2"><li>Text Recognition - This was relatively straightforward in terms of evaluation and our training phase involved the dataset split into train/test sets which gave us the accuracy of our model. </li></ol><ol id="b419aee9-bc8c-4430-8865-2dd93e71f416" class="numbered-list" start="3"><li>CV-HTR combined - Our metric for the combined system included a complete run of our application - from opening the CV window and drawing the intended word to our HTR system correctly printing the word back onto the terminal. </li></ol><h3 id="4cd5d7e3-f842-4784-934d-49b97461aa39" class="">Trends</h3><ol id="58e047c5-e2ab-440b-8d51-a45db1cbcaa7" class="numbered-list" start="1"><li>After running the system over and over again and analyzing our results, we figured that it always seems to fail in a scenario when our HSV mask matches to a lot of objects in the user&#x27;s environment. For example, in <mark class="highlight-red_background">Case 3</mark> we used a blue HSV mask and there is a blue couch in user&#x27;s surroundings and hence the system is not able to initialize a single object to track and fails to perform its intended task. Once we either change the HSV mask or remove elements in our environment, the system then seems to work fine (as described in both our success cases).</li></ol><ol id="ad761734-b03c-4548-8fbf-ec74be9c4e2f" class="numbered-list" start="2"><li>The system tends to produce more accurate outputs in cases where a cursive stroke is used instead of single and spaced characters. This might be because when the user is drawing single characters in the air, there seems to be an added load on the hand where they have to pause the tracking everytime they need to add a space. This leads to noise in the projected output on the white screen which consequently causes irregular results (as described in <mark class="highlight-red_background">Case 4</mark>). </li></ol><h1 id="79149798-c388-4475-982d-8650d34b2b42" class="">Conclusion </h1><p id="837b49d5-f272-44bc-a7d7-d1bb4a231a00" class="">AirScribe currently fulfills it&#x27;s role of enabling users to capture gestures in the air as writing on a virtual canvas. </p><p id="2e2187e1-89dd-4b8e-85e4-ee121c7df7a2" class="">This system could have several applications in the real world, particularly in the time of virtual living and learning. With remote classes, it is difficult for professors to share notes or write out concepts like one would on a typical whiteboard. AirScribe provides an advanced interface for remote learning, where instructors are able to write, as if on a whiteboard, using gestures in the air and transform this into accessible notes for students. </p><p id="3a2db547-8443-4028-aff3-5d4503c05256" class="">Our system uses computer vision based object tracking to read in the gestures and display them on a virtual canvas, as well as machine learning based text recognition tools to convert the writing into text. Our product also has additional tools and features to assist instructors including different colored pen options and a clear canvas button. We see this system having even more potential with a few further improvements!</p><h1 id="1f6b47e6-0940-4915-9c4c-eface9f7997a" class="">Future Improvements</h1><ul id="93d00a5e-2fe8-42ee-8735-7354009d0bb9" class="bulleted-list"><li>Additional features to allow for greater expression and ease of usage. For example: gesture activated modes (straight line mode for underlining, highlighting mode, shape mode etc. each activated by a unique gesture), changing the pen width, a way to undo or erase writing in the case of mistakes and ability to add pictures onto the screen and have them saved along with the writing.</li></ul><ul id="281918d3-358f-450f-a526-2164e66ebcbd" class="bulleted-list"><li>Improvements to the tip detection model in cases where the color of the object being tracked appears in other sections of the screen. Currently, this interferes with object tracking and can be improved so that the tip is detected more precisely.</li></ul><p id="35402d68-c187-4170-a576-1549dc1fa9ae" class="">
+</p><div id="9e682273-b2c4-4bae-a018-de942a9880fe" class="collection-content"><h4 class="collection-title">References</h4><table class="collection-content"><thead><tr><th><span class="icon property-icon"><svg viewBox="0 0 14 14" style="width:14px;height:14px;display:block;fill:rgba(55, 53, 47, 0.4);flex-shrink:0;-webkit-backface-visibility:hidden" class="typesTitle"><path d="M7.73943662,8.6971831 C7.77640845,8.7834507 7.81338028,8.8943662 7.81338028,9.00528169 C7.81338028,9.49823944 7.40669014,9.89260563 6.91373239,9.89260563 C6.53169014,9.89260563 6.19894366,9.64612676 6.08802817,9.30105634 L5.75528169,8.33978873 L2.05809859,8.33978873 L1.72535211,9.30105634 C1.61443662,9.64612676 1.2693662,9.89260563 0.887323944,9.89260563 C0.394366197,9.89260563 0,9.49823944 0,9.00528169 C0,8.8943662 0.0246478873,8.7834507 0.0616197183,8.6971831 L2.46478873,2.48591549 C2.68661972,1.90669014 3.24119718,1.5 3.90669014,1.5 C4.55985915,1.5 5.12676056,1.90669014 5.34859155,2.48591549 L7.73943662,8.6971831 Z M2.60035211,6.82394366 L5.21302817,6.82394366 L3.90669014,3.10211268 L2.60035211,6.82394366 Z M11.3996479,3.70598592 C12.7552817,3.70598592 14,4.24823944 14,5.96126761 L14,9.07922535 C14,9.52288732 13.6549296,9.89260563 13.2112676,9.89260563 C12.8169014,9.89260563 12.471831,9.59683099 12.4225352,9.19014085 C12.028169,9.6584507 11.3257042,9.95422535 10.5492958,9.95422535 C9.60035211,9.95422535 8.47887324,9.31338028 8.47887324,7.98239437 C8.47887324,6.58978873 9.60035211,6.08450704 10.5492958,6.08450704 C11.3380282,6.08450704 12.040493,6.33098592 12.4348592,6.81161972 L12.4348592,5.98591549 C12.4348592,5.38204225 11.9172535,4.98767606 11.1285211,4.98767606 C10.6602113,4.98767606 10.2411972,5.11091549 9.80985915,5.38204225 C9.72359155,5.43133803 9.61267606,5.46830986 9.50176056,5.46830986 C9.18133803,5.46830986 8.91021127,5.1971831 8.91021127,4.86443662 C8.91021127,4.64260563 9.0334507,4.44542254 9.19366197,4.34683099 C9.87147887,3.90316901 10.6232394,3.70598592 11.3996479,3.70598592 Z M11.1778169,8.8943662 C11.6830986,8.8943662 12.1760563,8.72183099 12.4348592,8.37676056 L12.4348592,7.63732394 C12.1760563,7.29225352 11.6830986,7.11971831 11.1778169,7.11971831 C10.5616197,7.11971831 10.056338,7.45246479 10.056338,8.0193662 C10.056338,8.57394366 10.5616197,8.8943662 11.1778169,8.8943662 Z M0.65625,11.125 L13.34375,11.125 C13.7061869,11.125 14,11.4188131 14,11.78125 C14,12.1436869 13.7061869,12.4375 13.34375,12.4375 L0.65625,12.4375 C0.293813133,12.4375 4.43857149e-17,12.1436869 0,11.78125 C-4.43857149e-17,11.4188131 0.293813133,11.125 0.65625,11.125 Z"></path></svg></span>Title</th><th><span class="icon property-icon"><svg viewBox="0 0 14 14" style="width:14px;height:14px;display:block;fill:rgba(55, 53, 47, 0.4);flex-shrink:0;-webkit-backface-visibility:hidden" class="typesText"><path d="M7,4.56818 C7,4.29204 6.77614,4.06818 6.5,4.06818 L0.5,4.06818 C0.223858,4.06818 0,4.29204 0,4.56818 L0,5.61364 C0,5.88978 0.223858,6.11364 0.5,6.11364 L6.5,6.11364 C6.77614,6.11364 7,5.88978 7,5.61364 L7,4.56818 Z M0.5,1 C0.223858,1 0,1.223858 0,1.5 L0,2.54545 C0,2.8216 0.223858,3.04545 0.5,3.04545 L12.5,3.04545 C12.7761,3.04545 13,2.8216 13,2.54545 L13,1.5 C13,1.223858 12.7761,1 12.5,1 L0.5,1 Z M0,8.68182 C0,8.95796 0.223858,9.18182 0.5,9.18182 L11.5,9.18182 C11.7761,9.18182 12,8.95796 12,8.68182 L12,7.63636 C12,7.36022 11.7761,7.13636 11.5,7.13636 L0.5,7.13636 C0.223858,7.13636 0,7.36022 0,7.63636 L0,8.68182 Z M0,11.75 C0,12.0261 0.223858,12.25 0.5,12.25 L9.5,12.25 C9.77614,12.25 10,12.0261 10,11.75 L10,10.70455 C10,10.4284 9.77614,10.20455 9.5,10.20455 L0.5,10.20455 C0.223858,10.20455 0,10.4284 0,10.70455 L0,11.75 Z"></path></svg></span>Citation</th></tr></thead><tbody><tr id="24644e04-f2fa-456c-87f4-c424db89fc9f"><td class="cell-title"><a href="https://www.notion.so/Hand-Gesture-Recognition-with-Convolution-Neural-Networks-24644e04f2fa456c87f4c424db89fc9f">Hand Gesture Recognition with Convolution Neural Networks</a></td><td class="cell-n&gt;J|">F. Zhan, &quot;Hand Gesture Recognition with Convolution Neural Networks,&quot; 2019 IEEE 20th International   Conference on Information Reuse and Integration for Data Science (IRI), Los Angeles, CA, USA, 2019, pp. 295-298, doi: 10.1109/IRI.2019.00054.</td></tr><tr id="2027a9f6-0159-4b4c-866a-197421e75a61"><td class="cell-title"><a href="https://www.notion.so/Build-a-Handwritten-Text-Recognition-System-using-TensorFlow-2027a9f601594b4c866a197421e75a61">Build a Handwritten Text Recognition System using TensorFlow</a></td><td class="cell-n&gt;J|">Scheidl, H. (2020, August 09). Build a Handwritten Text Recognition System using TensorFlow. Retrieved October 01, 2020, from https://towardsdatascience.com/build-a-handwritten-text-recognition-system-using-tensorflow-2326a3487cd5</td></tr><tr id="fa765c94-3a51-4e0b-988e-da51f724f983"><td class="cell-title"><a href="https://www.notion.so/Visual-Gesture-Recognition-for-Text-Writing-in-Air-fa765c943a514e0b988eda51f724f983">Visual Gesture Recognition for Text Writing in Air</a></td><td class="cell-n&gt;J|">V. Joseph, A. Talpade, N. Suvarna and Z. Mendonca, &quot;Visual Gesture Recognition for Text Writing in Air,&quot; 2018 Second International Conference on Intelligent Computing and Control Systems (ICICCS), Madurai, India, 2018, pp. 23-26, doi: 10.1109/ICCONS.2018.8663176.</td></tr></tbody></table></div><p id="f01b5a4a-f637-4c95-b1bf-6af7f9b42e7c" class="">
+</p></div></article></body></html>

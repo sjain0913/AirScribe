@@ -25,7 +25,7 @@ def detect_text(path):
     return  writing
 
 
-path = "/Users/gursimransingh/Desktop/cv/project/AirScribe/HTR/test/test0.jpg"
+path = "/Users/gursimransingh/Desktop/AirScribe/test_imgs/out3_white.jpg"
 
 print(detect_text(path))
 
